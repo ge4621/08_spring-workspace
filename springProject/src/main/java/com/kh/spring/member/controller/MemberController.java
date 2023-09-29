@@ -207,7 +207,7 @@ public class MemberController {
 		
 		//암호화 작업(암호문을 만들어내는 과정)
 		String encPwd = bcryptPasswordEncoder.encode(m.getUserPwd());
-		//System.out.println("암호문 : " + encPwd);
+		System.out.println("암호문 : " + encPwd);
 		
 		m.setUserPwd(encPwd);//Member 객체에 userPwd에 평문이 아닌 암호문으로 변경
 		
