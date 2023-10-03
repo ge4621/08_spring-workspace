@@ -20,7 +20,7 @@ public class MemberController {
 	@Autowired //DI(Dependency Injection)특징 => 의존성 주입 @Autowired => 중요!!안쓰면 null 오류가 뜸
 	private MemberServiceImpl mService;
 	
-	@Autowired
+	@Autowired//controller가 필요할 때 가져다 쓰기 위해 Autowired를 선언하는 거임
 	private BCryptPasswordEncoder bcryptPasswordEncoder;
 	
 
