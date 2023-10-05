@@ -11,6 +11,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -76,6 +77,10 @@ public class BoardController {
 		// /WEB-INF/views/board/boardEnrollForm.jsp
 		return "board/boardEnrollForm";
 	}
+	
+	//**만약 다중 파일 업로드 기능 시??
+	//	여러개의 input type="file" 요소에 다 동일한 키값(name)으로 부여 ex)upfile
+	//	MultipartFile[] upfile로 받으면 됨(0번 인덱스부터 차곡차곡 첨부파일 담겨있음)
 	
 	@RequestMapping("insert.bo")
 	public String insertBoard(Board b, MultipartFile upfile, HttpSession session, Model model) {
@@ -157,6 +162,7 @@ public class BoardController {
 		return changeName;
 	}
 	
+	/*  //상세보기 방법1
 	@RequestMapping("detail.bo")
 	public String selectBoard(int bno,HttpSession session, Model model) {
 		//bno에는 상세조회를 하고자 하는 해당 게시글 번호 담겨 있다. 
@@ -178,13 +184,106 @@ public class BoardController {
 			//	>>에러 문구 담아서 에러페이지 포워딩
 			model.addAttribute("errorMsg", "게시글 상세보기에 실패했습니다.");
 			return "common/errorPage";
-			
-		}
+		}	
+	}
+	*/
 	
+	//상세 보기 방법2
+	@RequestMapping("detail.bo")
+	public ModelAndView selectBoard(int bno,HttpSession session, ModelAndView mv) {
+		//bno에는 상세조회를 하고자 하는 해당 게시글 번호 담겨 있다. 
+		
+		//해당 게시글 조회수 증가 서비스 호출 결과 받기(update하고 옴)
+		int result = bService.increaseCount(bno);
+		
+		//>>성공적으로 조회수 증가
+		//	>>boardDetailView.jsp상에 필요한 데이터 조회(게시글 상세정보 조회 서비스 호출
+		if(result > 0) {//성공
+			//	>>조회된 데이터 담아서
+			//	>>board/boardDetailView.jsp로 포워딩
+			Board board = bService.selectBoard(bno);
+			mv.addObject("b", board).setViewName("board/boardDetailView");
+			
+		}else {//실패
+			//>>조회수 증가 실패
+			//	>>에러 문구 담아서 에러페이지 포워딩
+			mv.addObject("errorMsg", "게시글 상세보기에 실패했습니다.").setViewName("common/errorPage");
+		}	
+		return mv; //modelandview 사용시 mv를 return 해야 한다.
+	}
+	
+	@RequestMapping("delete.bo")
+	public String deleteBoard(int bno, String filePath, HttpSession session, Model model) { // 파일이 있을 경우 filePath = "resources/uploadFiles/xxxxx.jsp" | 없을 경우 ""
+		int result = bService.deleteBoard(bno);
+		
+		if(result>0) { //삭제 성공
+			
+			if(!filePath.equals("")) {//첨부파일이 있었을 경우 => 파일 삭제
+				new File(session.getServletContext().getRealPath(filePath)).delete();
+			}
+			
+			//게시판 리스트 페이지 list.bo url재요청
+			session.setAttribute("alertMsg", "성공적으로 게시글이 삭제되었습니다.");
+			return "redirect:list.bo";
+			
+		}else {//삭제 실패 => 에러문구 담아서 에러페이지
+			model.addAttribute("errorMsg", "게시글 삭제에 실패했습니다.");
+			return "common/errorPage";
+		}
+		
+	}
+	
+	@RequestMapping("updateForm.bo")
+	public String updateForm(int bno,Model model) {
+		model.addAttribute("b", bService.selectBoard(bno));
+		return "board/boardUpdateForm";
+	}
+	
+	@RequestMapping("update.bo")
+	public String updateBoard(@ModelAttribute Board b, MultipartFile reupfile, HttpSession session, Model model) {
+		
+		//새로 넘어온 첨부파일이 있을 경우
+		if(!reupfile.getOriginalFilename().equals("")) {
+			
+			//기존에 첨부파일이 있었을 경우 => 기존 첨부파일 지우기
+			if(b.getOriginName() != null) { //기존 첨부파일이 있다.
+				new File(session.getServletContext().getRealPath(b.getChangeName())).delete();
+			}
+	
+			//새로 넘어온 첨부파일 서버 업로드 시키기
+			String changeName = saveFile(reupfile, session);
+			
+			//b에 새로 넘어온 첨부파일에 대한 원본명, 저장경로 담기
+			b.setOriginName(reupfile.getOriginalFilename());
+			b.setChangeName("resources/uploadFiles/" + changeName);
+		}
+		/*
+		 *  b에 boardNo, boardTitle, boardContent 무조건 담겨 있다.!!
+		 *  
+		 *  1. 새로 첨부된 파일 x, 기존 파일 x => originName : null , changeName : null
+		 *  
+		 *  2. 새로 첨부된 파일 x, 기존 파일 o => originName : 기존 첨부 파일 원본명 , changeName : 기존 첨파 저장 경로
+		 *  
+		 *  3. 새로 첨부된 파일 o, 기조 파일 x => 새로 첨부된 파일 서버에 업로드 
+		 *  							=> originName : 새로운 첨부파일 원본명 , changeName : 새로운 첨부파일 저장 경로
+		 *  
+		 *  4. 새로 첨부된 파일 o, 기존 파일 o => 기존 파일 삭제
+		 *  							=> 새로운 전달된 파일 서버에 업로드
+		 *  							=> originName : 새로운 첨부파일 원본명 , changeName : 새로운 첨부파일 저장 경로
+		 */
+		
+		int result = bService.updateBoard(b);
+		
+		if(result>0) {//수정성공 => 상세페이지 detail.bo?bno=해당 수정하고 있는 게시글 번호 => url재요청
+			session.setAttribute("alertMsg", "성공적으로 게시글이 수정되었습니다.");
+			return "redirect:detail.bo?bno="+b.getBoardNo();
+		}else {//수정 실패 => 에러페이지
+			model.addAttribute("errorMsg", "게시글 수정에 실패했습니다.");
+			return "common/errorPage";
+		}
 		
 		
 		
 	}
-	
 	
 }

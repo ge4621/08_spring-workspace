@@ -12,30 +12,38 @@ import com.kh.spring.common.model.vo.PageInfo;
 @Repository
 public class BoardDao {
 	
-	public int selectListCount(SqlSessionTemplate sqlsession) {
-		return sqlsession.selectOne("boardMapper.selectListCount");
+	public int selectListCount(SqlSessionTemplate sqlSession) {
+		return sqlSession.selectOne("boardMapper.selectListCount");
 	}
 	
-	public ArrayList<Board> selectList(SqlSessionTemplate sqlsession,PageInfo pi){
+	public ArrayList<Board> selectList(SqlSessionTemplate sqlSession,PageInfo pi){
 		
 		int offset = (pi.getCurrentPage()-1)*pi.getBoardLimit(); 
 		int limit = pi.getBoardLimit();
 		
 		RowBounds rowBounds = new RowBounds(offset,limit);
 		
-		return (ArrayList)sqlsession.selectList("boardMapper.selectList", null , rowBounds);
+		return (ArrayList)sqlSession.selectList("boardMapper.selectList", null , rowBounds);
 	}
 	
-	public int insertBoard(SqlSessionTemplate sqlsession,Board b) {
-		return sqlsession.insert("boardMapper.insertBoard", b);
+	public int insertBoard(SqlSessionTemplate sqlSession,Board b) {
+		return sqlSession.insert("boardMapper.insertBoard", b);
 	}
 	
-	public int increaseCount(SqlSessionTemplate sqlsession,int boardNo) {
-		return sqlsession.update("boardMapper.increaseCount", boardNo);
+	public int increaseCount(SqlSessionTemplate sqlSession,int boardNo) {
+		return sqlSession.update("boardMapper.increaseCount", boardNo);
 	}
 	
-	public Board selectBoard(SqlSessionTemplate sqlsession,int boardNo) {
-		return sqlsession.selectOne("boardMapper.selectBoard", boardNo);
+	public Board selectBoard(SqlSessionTemplate sqlSession,int boardNo) {
+		return sqlSession.selectOne("boardMapper.selectBoard", boardNo);
+	}
+	
+	public int deleteBoard(SqlSessionTemplate sqlSession,int boardNo) {
+		return sqlSession.update("boardMapper.deleteBoard", boardNo);
+	}
+	
+	public int updateBoard(SqlSessionTemplate sqlSession,Board b) {
+		return sqlSession.update("boardMapper.updateBoard", b);
 	}
 
 }

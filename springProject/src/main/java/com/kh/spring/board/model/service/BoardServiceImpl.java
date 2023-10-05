@@ -18,41 +18,41 @@ public class BoardServiceImpl implements BoardService{
 	private BoardDao bDao;
 	
 	@Autowired
-	private SqlSessionTemplate sqlsession;
+	private SqlSessionTemplate sqlSession;
 	
 	@Override
 	public int selectListCount() {
-		return bDao.selectListCount(sqlsession);
+		return bDao.selectListCount(sqlSession);
 	}
 
 	@Override
 	public ArrayList<Board> selectList(PageInfo pi) {
-		return bDao.selectList(sqlsession,pi);
+		return bDao.selectList(sqlSession,pi);
 	}
 
 	@Override
 	public int insertBoard(Board b) {
-		return bDao.insertBoard(sqlsession,b);
+		return bDao.insertBoard(sqlSession,b);
 	}
 
 	@Override
 	public int increaseCount(int boardNo) {
-		return bDao.increaseCount(sqlsession,boardNo);
+		return bDao.increaseCount(sqlSession,boardNo);
 	}
 
 	@Override
 	public Board selectBoard(int boardNo) {
-		return bDao.selectBoard(sqlsession,boardNo);
+		return bDao.selectBoard(sqlSession,boardNo);
 	}
 
 	@Override
 	public int deleteBoard(int boardNo) {
-		return 0;
+		return bDao.deleteBoard(sqlSession,boardNo);
 	}
 
 	@Override
 	public int updateBoard(Board b) {
-		return 0;
+		return bDao.updateBoard(sqlSession,b);
 	}
 
 	@Override
