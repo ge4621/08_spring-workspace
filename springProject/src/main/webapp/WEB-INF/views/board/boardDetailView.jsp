@@ -168,7 +168,7 @@
     				success:function(list){
     					console.log(list);
     					
-    					let value="";
+    					let value=""; 
     					for(let i in list){
     						value +="<tr>"
     							+"<th>" + list[i].replyWriter + "</th>"

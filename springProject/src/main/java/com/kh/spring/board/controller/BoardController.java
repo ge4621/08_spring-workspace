@@ -302,4 +302,16 @@ public class BoardController {
 		return result>0?"success":"fail";
 	}
 	
+	@ResponseBody
+	@RequestMapping(value="topList.bo",produces = "application/json; charset=UTF-8")
+	public String ajaxTopBoardList() {
+		ArrayList<Board> list = bService.selectTopBoardList();
+		//System.out.println(new Gson().toJson(list));
+		return new Gson().toJson(list);
+		
+	}
+	
+	//@RequestMapping("search.bo")
+	//public void 
+	
 }
