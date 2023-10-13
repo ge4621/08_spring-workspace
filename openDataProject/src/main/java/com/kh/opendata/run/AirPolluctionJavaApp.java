@@ -45,7 +45,8 @@ public class AirPolluctionJavaApp {
 		
 		//4. 해당 OpenAPI 서버로 요청 보낸 후 입력 스트림을 통해 응답 데이터를 읽어들이기*****
 		BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-		
+	// BufferedReader = 보조 스트림 => 기반 스트림을 필요로 한다. 	
+	
 		String responseText = "";
 		
 		String line;
